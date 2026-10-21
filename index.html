@@ -79,11 +79,12 @@ label.sz{display:block;margin-top:10px;font-size:12px;color:var(--mut)}label.sz 
   #info{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;padding:12px;background:var(--pnl);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 28px rgba(0,0,0,.3);max-height:calc(var(--ph,100vh) * .52);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;z-index:5}
   #info .x{display:block;position:absolute;right:8px;top:8px;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:7px;padding:3px 9px;font:inherit;font-size:12px}
 }
+html.one #p,html.one #r,html.one #zm,html.one #db,html.one #info{display:none!important}#nf{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--mut);font-size:14px}html.one #nf.on{display:flex}
 </style>
 
 <svg id="sv"><g id="vp"></g></svg>
 <div id="p">
-  <div class="hd"><b>Елфимово • Лукояновский уезд</b></div>
+  <div class="hd"><b>Елфимово • Фамильная диаграмма</b></div>
   <input id="q" type="search" placeholder="Найти фамилию…" aria-label="Поиск фамилии" autocomplete="off"><div id="res"></div>
   <div id="cnt" aria-live="polite"></div>
   <div id="info"></div>
@@ -127,6 +128,11 @@ const VIEWS = { e: COLS.map((c, i) => c.g === 'Елфимово' && !c.mk ? i : 
 const MKD = r => st.v === 'e' ? r.mk : r.mkk;   // метрики текущей вкладки
 const st = { v: 'e', f: 'all', sort: 'first', sel: null, fd: null, m: 'p', min: 2, noin: true, mk: false };   // по умолчанию: пришлые фамилии скрыты, размер фамилии от 2 мужчин
 const $ = id => document.getElementById(id);
+// режим «один луч» для встраивания: ?ray=Название (или #ray=Название) открывает сразу развёрнутый луч без панелей; &theme=light|dark — тема
+const QS = new URLSearchParams(location.search + (location.hash.length > 1 ? '&' + location.hash.slice(1) : ''));
+let ONE = QS.get('ray') ? QS.get('ray').trim() : null;
+if (ONE) document.documentElement.classList.add('one');
+if (/^(light|dark)$/.test(QS.get('theme') || '')) document.documentElement.setAttribute('data-theme', QS.get('theme'));
 const setPh = () => document.documentElement.style.setProperty('--ph', innerHeight + 'px'); setPh();   // видимая высота окна: на телефоне 100vh больше неё и низ панели уходил за экран
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const norm = s => s.toLowerCase().replace(/ё/g, 'е');
@@ -454,24 +460,25 @@ function camTo(t, ms, done) {
   CAMT = requestAnimationFrame(step);
 }
 function availRect() {   // свободное место между панелями
+  if (ONE) return { l: 10, r: innerWidth - 10, t: 10, b: innerHeight - 10 };
   const W = innerWidth, H = innerHeight, p = $('p').getBoundingClientRect(), rr = $('r').getBoundingClientRect(), z = $('zm').getBoundingClientRect();
   return W <= 700 ? { l: 10, r: W - 10, t: p.bottom + 6, b: H - 10 } : { l: p.right + 10, r: Math.min(rr.left, z.left) - 10, t: 10, b: H - 10 };
 }
 function detSync() {
   if (st.sel == null) { if (DET) detExit(); return; }
   const r = find(st.sel); if (!r || !VIS.includes(r)) return;
-  if (!DET) { SAVE = { TX, TY, K, ROT: 0 }; DET = r.n; document.documentElement.classList.add('det'); detShow(r, true); }
-  else { DET = r.n; detShow(r, true); }
+  if (!DET) { SAVE = { TX, TY, K, ROT: 0 }; DET = r.n; document.documentElement.classList.add('det'); detShow(r, !ONE); }
+  else { DET = r.n; detShow(r, !ONE); }
 }
 function detExit() {
-  if (!DET) return; DET = null; document.documentElement.classList.remove('det', 'detcard'); $('db').style.display = 'none'; $('da').style.display = 'none';
+  if (!DET || ONE) return; DET = null; document.documentElement.classList.remove('det', 'detcard'); $('db').style.display = 'none'; $('da').style.display = 'none';
   const g = gDet; gDet = null; if (g) { g.setAttribute('class', 'gd out'); setTimeout(() => g.remove(), 300); }
   camTo(SAVE || fitCam(), 650, () => { ROT = 0; apply(); });
 }
 function detShow(r, animate) {
   tip.style.display = 'none';
   if (gDet) { gDet.remove(); gDet = null; }
-  const A = availRect(), N = VIS.length, k = VIS.indexOf(r), slot = (360 - GAP) / Math.max(N, 1) * Math.PI / 180;
+  const A = availRect(), TB = ONE ? 4 : 44, N = VIS.length, k = VIS.indexOf(r), slot = (360 - GAP) / Math.max(N, 1) * Math.PI / 180;
   const th = (-90 + GAP / 2) * Math.PI / 180 + (k + .5) * slot, deg = th * 180 / Math.PI;
   const nodes = VC.filter(i => has(r, i) && !isReg(i)), c = 'var(--c' + epoch(firstAny(r)) + ')';
   // написания: у каждого — ревизии, где оно записано, и число записей метрик по годам
@@ -488,16 +495,16 @@ function detShow(r, animate) {
   const Wd = A.r - A.l, K0 = Math.max(.4, Math.min(6, (Wd - padL - padR) / Math.max(R1 - xL, 40))), hwPx = hw * K0;
   const y1 = firstAny(r), age = new Date().getFullYear() - y1, da = $('da');   // возраст — от первого упоминания в любом источнике (ревизии, перепись 1677 г., метрики)
   const VAR = [r.n].concat(L.map(l => l.f)).filter((f, i, a) => a.indexOf(f) === i), NV = VAR.length;   // варианты на луче: основное (название луча) и написания, показанные полосами
-  da.style.maxWidth = Math.max(220, A.r - A.l) + 'px'; da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + 46 + 'px';
+  da.style.maxWidth = Math.max(220, A.r - A.l) + 'px'; da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + TB + 2 + 'px';
   const LKH = (r.lk && r.lk.length) ? '<span>' + (r.lk.length === 1 ? 'На сайте есть страница фамилии: ' : 'На сайте есть страницы следующих фамилий: ') + r.lk.map(x => `<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(', ') + '</span>' : '';
   const mkDa = list => `<b>Род известен ${pl(age, 'год', 'года', 'лет')}</b><span>Прослеживается по документам с ${y1} года</span><span>${NV % 10 === 1 && NV % 100 !== 11 ? 'Известен' : 'Известно'} ${pl(NV, 'вариант', 'варианта', 'вариантов')} написания фамилии${list ? ': ' + VAR.map(esc).join(', ') : ' (названия — справа от диаграммы)'}</span>${LKH}`;
-  const lay = () => { const AH = da.offsetHeight + 6, Hav = A.b - (A.t + 44 + AH); return { AH, Hav, laneH: Math.max(12, Math.min(22, (Hav - 2 * hwPx - 102) / Math.max(n, 1))) }; };
+  const lay = () => { const AH = da.offsetHeight + 6, Hav = A.b - (A.t + TB + AH); return { AH, Hav, laneH: Math.max(12, Math.min(22, (Hav - 2 * hwPx - 102) / Math.max(n, 1))) }; };
   da.innerHTML = mkDa(true); da.style.display = 'block';
   let LZ = lay();
   if (LZ.Hav < 2 * hwPx + 12 * n + 104) { da.innerHTML = mkDa(false); LZ = lay(); }   // мало места (телефон, длинный список): список вариантов сворачивается, чтобы диаграмма не налезала на текст
   const AH = LZ.AH, Hav = LZ.Hav, laneH = LZ.laneH;
   const top = -(hwPx + 40), laneBottom = hwPx + 12 + laneH * n, bottom = laneBottom + 52;
-  const xc = (xL + R1) / 2 + (-padL + 14 + labelPx) / (2 * K0), cxA = (A.l + A.r) / 2, cyA = A.t + 44 + AH + Math.max(Hav, bottom - top) / 2;   // если диаграмма выше доступного места, она начинается под текстом, а не поднимается на него
+  const xc = (xL + R1) / 2 + (-padL + 14 + labelPx) / (2 * K0), cxA = (A.l + A.r) / 2, cyA = A.t + TB + AH + Math.max(Hav, bottom - top) / 2;   // если диаграмма выше доступного места, она начинается под текстом, а не поднимается на него
   const target = { K: K0, TX: cxA - K0 * xc, TY: cyA - (top + bottom) / 2, ROT: -deg };
   // ---- рисование (координаты повёрнуты обратно: ось x — вдоль луча, 1 px экрана = s единиц) ----
   const s = 1 / K0, P = v => v * s, g = el('g', { class: 'gd', transform: `rotate(${deg})` }, vp); gDet = g;
@@ -553,12 +560,13 @@ function detShow(r, animate) {
   const bar = $('db'); bar.style.display = 'flex'; bar.style.left = (A.l + A.r) / 2 + 'px'; bar.style.top = A.t + 'px';
   $('dt').innerHTML = `<b>${esc(r.n)}</b><small>${pl(NV, 'вариант', 'варианта', 'вариантов')}</small>`;
   camTo(target, animate ? 700 : 0);
+  if (ONE) { try { parent.postMessage({ elfimovoRayHeight: Math.ceil(A.t + TB + AH + (bottom - top) + 10), ray: r.n }, '*'); } catch (e) {} }   // родитель может подогнать высоту iframe
 }
 const detStep = d => { if (!DET) return; const i = VIS.findIndex(x => x.n === st.sel), j = (i + d + VIS.length) % VIS.length; st.sel = VIS[j].n; mark(); info(); detSync(); };
 $('dprev').onclick = () => detStep(-1); $('dnext').onclick = () => detStep(1);
 $('dx').onclick = () => { st.sel = null; mark(); info(); detSync(); };
 $('dcard').onclick = () => document.documentElement.classList.toggle('detcard');
-addEventListener('keydown', e => { if (!DET || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return; if (e.key === 'Escape') $('dx').click(); else if (e.key === 'ArrowLeft') detStep(-1); else if (e.key === 'ArrowRight') detStep(1); });
+addEventListener('keydown', e => { if (!DET || ONE || /INPUT|SELECT|TEXTAREA/.test((e.target || {}).tagName || '')) return; if (e.key === 'Escape') $('dx').click(); else if (e.key === 'ArrowLeft') detStep(-1); else if (e.key === 'ArrowRight') detStep(1); });
 const tipAt = (html, x, y, auto) => { tip.innerHTML = html; tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 270, x + 14) + 'px'; tip.style.top = Math.min(innerHeight - 70, y + 14) + 'px'; if (auto) { clearTimeout(tipAt.t); tipAt.t = setTimeout(() => { tip.style.display = 'none'; }, 3500); } };
 function hover(e) {
   const g = document.elementFromPoint(e.clientX, e.clientY), sp = g && g.closest && g.closest('.sp,.lb,.fd,.dn');
@@ -617,4 +625,10 @@ $('q').oninput = e => {
 addEventListener('resize', () => { setPh(); if (DET) { SAVE = fitCam(); detShow(find(DET), false); } else fit(); });
 fit(); setView('e');
 if (innerWidth < 900) $('fold').click();   // узкий экран: настройки свёрнуты
+if (ONE) {
+  const nk = s => String(s).toLowerCase().replace(/ё/g, 'е').trim(), q = nk(ONE);
+  const s = DATA.m.find(r => nk(r.n) === q) || DATA.m.find(r => (r.vr || []).some(v => nk(v) === q) || (r.f || []).some(x => nk(x[0]) === q));
+  if (s) showRay(s.n);
+  else { const d = document.createElement('div'); d.id = 'nf'; d.className = 'on'; d.textContent = 'Для фамилии «' + ONE + '» на диаграмме пока нет данных.'; document.body.appendChild(d); }
+}
 </script>
