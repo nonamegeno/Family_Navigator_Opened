@@ -80,6 +80,7 @@ label.sz{display:block;margin-top:10px;font-size:12px;color:var(--mut)}label.sz 
   #info .x{display:block;position:absolute;right:8px;top:8px;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:7px;padding:3px 9px;font:inherit;font-size:12px}
 }
 html.one #p,html.one #r,html.one #zm,html.one #db,html.one #info{display:none!important}#nf{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--mut);font-size:14px}html.one #nf.on{display:flex}
+@media (min-width:701px){#da b{font-size:17px}#da span{font-size:14px}}
 </style>
 
 <svg id="sv"><g id="vp"></g></svg>
@@ -471,12 +472,14 @@ function detSync() {
   else { DET = r.n; detShow(r, !ONE); }
 }
 function detExit() {
-  if (!DET || ONE) return; DET = null; document.documentElement.classList.remove('det', 'detcard'); $('db').style.display = 'none'; $('da').style.display = 'none';
+  if (!DET || ONE) return; detRestore(); DET = null; document.documentElement.classList.remove('det', 'detcard'); $('db').style.display = 'none'; $('da').style.display = 'none';
   const g = gDet; gDet = null; if (g) { g.setAttribute('class', 'gd out'); setTimeout(() => g.remove(), 300); }
   camTo(SAVE || fitCam(), 650, () => { ROT = 0; apply(); });
 }
+let DETEL = null;
+function detRestore() { if (DETEL) { [...DETEL.children].forEach(e => { e.style.display = ''; if (e.tagName === 'path') e.removeAttribute('transform'); }); DETEL = null; } }   // вернуть луч круговой диаграммы в исходный вид
 function detShow(r, animate) {
-  tip.style.display = 'none';
+  tip.style.display = 'none'; detRestore();
   if (gDet) { gDet.remove(); gDet = null; }
   const A = availRect(), TB = ONE ? 4 : 44, N = VIS.length, k = VIS.indexOf(r), slot = (360 - GAP) / Math.max(N, 1) * Math.PI / 180;
   const th = (-90 + GAP / 2) * Math.PI / 180 + (k + .5) * slot, deg = th * 180 / Math.PI;
@@ -490,29 +493,30 @@ function detShow(r, animate) {
   L.sort((a, b) => a.y0 - b.y0 || b.tot - a.tot || a.f.localeCompare(b.f, 'ru'));
   const n = L.length + (strip ? 1 : 0), hw = Math.max(2, ...nodes.map(i => Math.min(Math.max(.6, SCRcur * Math.sqrt(r[st.m][i]) / 2), slot * ry(COLS[i].n) * .48)));
   let xL = Infinity; if (nodes.length) xL = ry(COLS[nodes[0]].n); if (st.mk && MKD(r)) xL = Math.min(xL, ry(MKD(r)[0][0] - .5)); LM.forEach(l => xL = Math.min(xL, ry(l.y0) - 2)); if (!isFinite(xL)) xL = R0;
-  const ph = innerWidth <= 700, stat = l => ph ? '' : [l.rev.length ? l.rev.length + ' рев.' : '', l.tot ? l.tot + ' зап.' : ''].filter(Boolean).join(' · ');
-  const labelPx = Math.max(r.n.length * 9.2, ...L.map(l => l.f.length * 7 + stat(l).length * 5.6 + 18)), padL = ph ? 22 : 34, padR = labelPx + (ph ? 14 : 26);
-  const Wd = A.r - A.l, K0 = Math.max(.4, Math.min(6, (Wd - padL - padR) / Math.max(R1 - xL, 40))), hwPx = hw * K0;
+  const ph = innerWidth <= 700, FS = ph ? 1.08 : 1.2, LH = ph ? 13 : 15, stat = l => ph ? '' : [l.rev.length ? l.rev.length + ' рев.' : '', l.tot ? l.tot + ' зап.' : ''].filter(Boolean).join(' · ');
+  const labelPx = Math.max(r.n.length * 9.2 * 1.15 * FS / 1.2, ...L.map(l => (l.f.length * 7 + stat(l).length * 5.6) * FS / 1.0 + 18)), padL = ph ? 22 : 34, padR = labelPx + (ph ? 14 : 26);
+  const Wd = A.r - A.l, K0 = Math.max(.4, Math.min(6, (Wd - padL - padR) / Math.max(R1 - xL, 40))), hwRaw = hw * K0, hwPx = Math.min(hwRaw, 8), regi = VC.find(i => isReg(i) && has(r, i)), RX = regi != null ? 16 : 0;   // толщина ствола не больше 16 px (иначе при сильном приближении «толстенная» линия); FS — крупнее шрифт; RX — место под строку легенды про ромб
   const y1 = firstAny(r), age = new Date().getFullYear() - y1, da = $('da');   // возраст — от первого упоминания в любом источнике (ревизии, перепись 1677 г., метрики)
   const VAR = [r.n].concat(L.map(l => l.f)).filter((f, i, a) => a.indexOf(f) === i), NV = VAR.length;   // варианты на луче: основное (название луча) и написания, показанные полосами
-  da.style.maxWidth = Math.max(220, A.r - A.l) + 'px'; da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + TB + 2 + 'px';
+  da.style.width = Math.max(220, A.r - A.l) + 'px';   // явная ширина: у блока с left:50% и translateX(-50%) ширина «по содержимому» была бы не больше половины экрана
+   da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + TB + 2 + 'px';
   const LKH = (r.lk && r.lk.length) ? '<span>' + (r.lk.length === 1 ? 'На сайте есть страница фамилии: ' : 'На сайте есть страницы следующих фамилий: ') + r.lk.map(x => `<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(', ') + '</span>' : '';
   const mkDa = list => `<b>Род известен ${pl(age, 'год', 'года', 'лет')}</b><span>Прослеживается по документам с ${y1} года</span><span>${NV % 10 === 1 && NV % 100 !== 11 ? 'Известен' : 'Известно'} ${pl(NV, 'вариант', 'варианта', 'вариантов')} написания фамилии${list ? ': ' + VAR.map(esc).join(', ') : ' (названия — справа от диаграммы)'}</span>${LKH}`;
-  const lay = () => { const AH = da.offsetHeight + 6, Hav = A.b - (A.t + TB + AH); return { AH, Hav, laneH: Math.max(12, Math.min(22, (Hav - 2 * hwPx - 102) / Math.max(n, 1))) }; };
+  const lay = () => { const AH = da.offsetHeight + 6, Hav = A.b - (A.t + TB + AH); return { AH, Hav, laneH: Math.max(LH, Math.min(24, (Hav - 2 * hwPx - 120 - RX) / Math.max(n, 1))) }; };
   da.innerHTML = mkDa(true); da.style.display = 'block';
   let LZ = lay();
-  if (LZ.Hav < 2 * hwPx + 12 * n + 104) { da.innerHTML = mkDa(false); LZ = lay(); }   // мало места (телефон, длинный список): список вариантов сворачивается, чтобы диаграмма не налезала на текст
+  if (LZ.Hav < 2 * hwPx + LH * n + 120 + RX) { da.innerHTML = mkDa(false); LZ = lay(); }   // мало места (телефон, длинный список): список вариантов сворачивается, чтобы диаграмма не налезала на текст
   const AH = LZ.AH, Hav = LZ.Hav, laneH = LZ.laneH;
-  const top = -(hwPx + 40), laneBottom = hwPx + 12 + laneH * n, bottom = laneBottom + 52;
+  const top = -(hwPx + 46), laneBottom = hwPx + 12 + laneH * n, bottom = laneBottom + 60 + RX;
   const xc = (xL + R1) / 2 + (-padL + 14 + labelPx) / (2 * K0), cxA = (A.l + A.r) / 2, cyA = A.t + TB + AH + Math.max(Hav, bottom - top) / 2;   // если диаграмма выше доступного места, она начинается под текстом, а не поднимается на него
   const target = { K: K0, TX: cxA - K0 * xc, TY: cyA - (top + bottom) / 2, ROT: -deg };
   // ---- рисование (координаты повёрнуты обратно: ось x — вдоль луча, 1 px экрана = s единиц) ----
   const s = 1 / K0, P = v => v * s, g = el('g', { class: 'gd', transform: `rotate(${deg})` }, vp); gDet = g;
-  const T = (x, y, txt, fs, anchor, ex) => { const e = el('text', Object.assign({ x, y, 'font-size': P(fs), 'text-anchor': anchor || 'start', 'dominant-baseline': 'central' }, ex || {}), g); e.textContent = txt; if (ex && ex.fill) e.style.fill = ex.fill; return e; };   // цвет — через style: правило CSS svg text{fill} сильнее атрибута
+  const T = (x, y, txt, fs, anchor, ex) => { const e = el('text', Object.assign({ x, y, 'font-size': P(fs * FS), 'text-anchor': anchor || 'start', 'dominant-baseline': 'central' }, ex || {}), g); e.textContent = txt; if (ex && ex.fill) e.style.fill = ex.fill; return e; };   // цвет — через style: правило CSS svg text{fill} сильнее атрибута
   const xl = R1 + P(14), xs = xL - P(30);
   // годовые линии ревизий и подписи (три уровня, чтобы близкие годы не перекрывались)
   VC.filter(i => !isReg(i) && ry(COLS[i].n) >= xL - P(12)).forEach((i, ix) => {
-    const x = ry(COLS[i].n), yy = -(hwPx + 8 + (ix % 3) * 11);
+    const x = ry(COLS[i].n), yy = -(hwPx + 8 + (ix % 3) * 13);
     el('line', { x1: x, x2: x, y1: P(yy + 7), y2: P(laneBottom), stroke: 'var(--fg)', 'stroke-opacity': .17, 'stroke-width': P(1), 'stroke-dasharray': `${P(2)} ${P(3)}` }, g);
     T(x, P(yy), COLS[i].y, 9.5, 'middle', { opacity: .85 });
   });
@@ -523,6 +527,12 @@ function detShow(r, animate) {
   // ствол и основная форма
   el('line', { x1: xs, x2: R1, y1: 0, y2: 0, stroke: c, 'stroke-opacity': .35, 'stroke-width': P(1.4) }, g);
   T(xl, 0, r.n, 15, 'start', { 'font-weight': 700, fill: 'var(--hi)' });
+  // луч из круговой диаграммы при сильном приближении был бы «толстенным», а ромб огромным: ствол сжимается до 16 px, ромб и точки рисуются заново
+  const spEl = [...gSp.children].find(e => e.dataset && e.dataset.n === r.n);
+  if (spEl) { DETEL = spEl; const fk = hwPx / hwRaw; [...spEl.children].forEach(e => { const tg = e.tagName; if (tg === 'polygon' || tg === 'circle' || tg === 'line' || (tg === 'path' && e.hasAttribute('data-y'))) e.style.display = 'none'; else if (tg === 'path' && fk < 1) e.setAttribute('transform', `rotate(${deg}) scale(1 ${fk}) rotate(${-deg})`); }); }
+  if (regi != null) { const x = ry(COLS[regi].n), s = P(6.5);
+    el('polygon', { points: `${x},${-s} ${x + s},0 ${x},${s} ${x - s},0`, fill: 'var(--bg)', stroke: 'var(--hi)', 'stroke-width': P(1.8) }, g);
+    el('circle', { cx: x, cy: 0, r: P(11), fill: 'transparent', class: 'dn', 'data-tip': `<b>Красная Поляна, ${esc(COLS[regi].y)} г.</b><br>переселение части крестьян: ${pl(r.p[regi], 'мужчина', 'мужчины', 'мужчин')}, ${pl(r.h[regi], 'двор', 'двора', 'дворов')}` }, g); }
   const maxN = Math.max(1, ...[...LM.values()].flatMap(l => l.mk.map(x => x[1])));
   const bars = (l, y) => l.mk.forEach(([yy, nn]) => {
     const x0 = ry(yy - .5), x1 = ry(yy + .5), w = Math.max(P(1.8), (x1 - x0) * .8), h = Math.max(P(3), P(laneH - 4) * nn / maxN), xm = (x0 + x1) / 2, wh = Math.max(w, P(5));
@@ -553,9 +563,10 @@ function detShow(r, animate) {
   });
   if (!NSP) { T(xL, P(hwPx + 24), 'В документах написания не указаны: фамилия найдена', 11, 'start', { opacity: .75 }); T(xL, P(hwPx + 40), 'по таблице соответствий и родству внутри двора.', 11, 'start', { opacity: .75 }); }
   // условные обозначения
-  const lx = xL - P(padL - 8), ly = P(laneBottom + 32);
+  const lx = xL - P(padL - 8), ly = P(laneBottom + 36);
   el('circle', { cx: lx + P(4), cy: ly, r: P(4), fill: c, stroke: 'var(--bg)', 'stroke-width': P(1) }, g); T(lx + P(14), ly, 'ревизия, где записано это написание', 10, 'start', { opacity: .75 });
-  el('rect', { x: lx + P(2), y: ly + P(8), width: P(4), height: P(10), fill: 'var(--mk)', opacity: .88 }, g); T(lx + P(14), ly + P(14), 'метрики: число записей за год', 10, 'start', { opacity: .75 });
+  if (regi != null) { const ys = ly + P(32), x0 = lx + P(4), s = P(5); el('polygon', { points: `${x0},${ys - s} ${x0 + s},${ys} ${x0},${ys + s} ${x0 - s},${ys}`, fill: 'var(--bg)', stroke: 'var(--hi)', 'stroke-width': P(1.4) }, g); T(lx + P(14), ys, 'ромб: переселение на Красную Поляну (1838 г.)', 10, 'start', { opacity: .75 }); }
+  el('rect', { x: lx + P(2), y: ly + P(10), width: P(4), height: P(10), fill: 'var(--mk)', opacity: .88 }, g); T(lx + P(14), ly + P(16), 'метрики: число записей за год', 10, 'start', { opacity: .75 });
   // верхняя панель
   const bar = $('db'); bar.style.display = 'flex'; bar.style.left = (A.l + A.r) / 2 + 'px'; bar.style.top = A.t + 'px';
   $('dt').innerHTML = `<b>${esc(r.n)}</b><small>${pl(NV, 'вариант', 'варианта', 'вариантов')}</small>`;
