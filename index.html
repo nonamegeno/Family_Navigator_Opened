@@ -441,7 +441,7 @@ function info() {
     if (r.s.split('').some((v, i) => v === '1' && COLS[i].g === 'Елфимово' && !COLS[i].mk)) h += '<p class="rel">Серым отмечены годы без формы: фамилия определена по более поздним документам или по родству внутри двора.</p>';
   }
   (st.v === 'e' ? [[r.mf, 'Елфимова'], [r.mfk, 'Красной Поляны']] : [[r.mfk, 'Красной Поляны'], [r.mf, 'Елфимова']]).forEach(([f, vil]) => { if (f && f.length) h += '<p class="rel"><b>Написания в метриках' + (r.mf && r.mfk ? ' ' + vil : '') + ' (записей):</b> ' + f.map(x => esc(x[0]) + ' <span class="no">(' + x[1] + ')</span>').join(', ') + '</p>'; });
-  if (r.vr && r.vr.length) h += '<p class="rel"><b>Другие фамилии и варианты по таблице соответствий:</b> ' + r.vr.map(esc).join(', ') + '</p>';
+  if (r.vr && r.vr.length) h += '<p class="rel"><b>Другие фамилии и варианты по таблице соответствий:</b> ' + r.vr.slice().sort((a, b) => a.localeCompare(b, 'ru')).map(esc).join(', ') + '</p>';
   box.innerHTML = h; box.style.display = 'block';
   $('cx').onclick = () => { st.sel = null; mark(); info(); detSync(); };
 }
@@ -497,7 +497,7 @@ function detShow(r, animate) {
   const labelPx = Math.max(r.n.length * 9.2 * 1.15 * FS / 1.2, ...L.map(l => (l.f.length * 7 + stat(l).length * 5.6) * FS / 1.0 + 18)), padL = ph ? 22 : 34, padR = labelPx + (ph ? 14 : 26);
   const Wd = A.r - A.l, K0 = Math.max(.4, Math.min(6, (Wd - padL - padR) / Math.max(R1 - xL, 40))), hwRaw = hw * K0, hwPx = Math.min(hwRaw, 8), regi = VC.find(i => isReg(i) && has(r, i)), RX = regi != null ? 16 : 0;   // толщина ствола не больше 16 px (иначе при сильном приближении «толстенная» линия); FS — крупнее шрифт; RX — место под строку легенды про ромб
   const y1 = firstAny(r), age = new Date().getFullYear() - y1, da = $('da');   // возраст — от первого упоминания в любом источнике (ревизии, перепись 1677 г., метрики)
-  const VAR = [r.n].concat(L.map(l => l.f)).filter((f, i, a) => a.indexOf(f) === i), NV = VAR.length;   // варианты на луче: основное (название луча) и написания, показанные полосами
+  const VAR = [r.n].concat(L.map(l => l.f)).filter((f, i, a) => a.indexOf(f) === i).sort((a, b) => a.localeCompare(b, 'ru')), NV = VAR.length;   // варианты на луче: основное (название луча) и написания, показанные полосами
   da.style.width = Math.max(220, A.r - A.l) + 'px';   // явная ширина: у блока с left:50% и translateX(-50%) ширина «по содержимому» была бы не больше половины экрана
    da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + TB + 2 + 'px';
   const LKH = (r.lk && r.lk.length) ? '<span>' + (r.lk.length === 1 ? 'На сайте есть страница фамилии: ' : 'На сайте есть страницы следующих фамилий: ') + r.lk.map(x => `<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(', ') + '</span>' : '';
