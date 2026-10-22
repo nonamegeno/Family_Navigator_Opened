@@ -564,9 +564,9 @@ function detShow(r, animate) {
   if (!NSP) { T(xL, P(hwPx + 24), 'В документах написания не указаны: фамилия найдена', 11, 'start', { opacity: .75 }); T(xL, P(hwPx + 40), 'по таблице соответствий и родству внутри двора.', 11, 'start', { opacity: .75 }); }
   // условные обозначения
   const lx = xL - P(padL - 8), ly = P(laneBottom + 36);
-  el('circle', { cx: lx + P(4), cy: ly, r: P(4), fill: c, stroke: 'var(--bg)', 'stroke-width': P(1) }, g); T(lx + P(14), ly, 'ревизия, где записано это написание', 10, 'start', { opacity: .75 });
+  el('circle', { cx: lx + P(4), cy: ly, r: P(4), fill: c, stroke: 'var(--bg)', 'stroke-width': P(1) }, g); T(lx + P(14), ly, 'ревизские сказки, в которых показана фамилия', 10, 'start', { opacity: .75 });
   if (regi != null) { const ys = ly + P(32), x0 = lx + P(4), s = P(5); el('polygon', { points: `${x0},${ys - s} ${x0 + s},${ys} ${x0},${ys + s} ${x0 - s},${ys}`, fill: 'var(--bg)', stroke: 'var(--hi)', 'stroke-width': P(1.4) }, g); T(lx + P(14), ys, 'ромб: переселение на Красную Поляну (1838 г.)', 10, 'start', { opacity: .75 }); }
-  el('rect', { x: lx + P(2), y: ly + P(10), width: P(4), height: P(10), fill: 'var(--mk)', opacity: .88 }, g); T(lx + P(14), ly + P(16), 'метрики: число записей за год', 10, 'start', { opacity: .75 });
+  el('rect', { x: lx + P(2), y: ly + P(10), width: P(4), height: P(10), fill: 'var(--mk)', opacity: .88 }, g); T(lx + P(14), ly + P(16), 'метрические книги: частота упоминаний фамилии за год', 10, 'start', { opacity: .75 });
   // верхняя панель
   const bar = $('db'); bar.style.display = 'flex'; bar.style.left = (A.l + A.r) / 2 + 'px'; bar.style.top = A.t + 'px';
   $('dt').innerHTML = `<b>${esc(r.n)}</b><small>${pl(NV, 'вариант', 'варианта', 'вариантов')}</small>`;
