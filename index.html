@@ -2,9 +2,9 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Елфимово | Фамильная диаграмма</title>
 <style>
-:root{--bg:#fff;--fg:#14414d;--ed:rgba(20,65,77,.28);--hi:#eb5d55;--pnl:rgba(255,255,255,.96);--zone:rgba(20,65,77,.07);--later:#a4b3b9;--mk:#7b4fb8;--mut:rgba(20,65,77,.7);--line:rgba(128,128,128,.35);--c0:#14414d;--c1:#335f76;--c2:#4f9bc4;--c3:#eb5d55;--c4:#eb885a;--c5:#e8c65b;--acc:#335f76;--accfg:#fff}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e8e8;--ed:rgba(200,200,200,.22);--hi:#ff6a5e;--pnl:rgba(30,31,36,.95);--zone:rgba(255,255,255,.06);--later:#6b7f86;--mk:#b69af0;--mk:#b69af0;--mut:rgba(232,232,232,.7);--c0:#1f6382;--c1:#3f8ba3;--c2:#8ec5ea;--c3:#ff6a5e;--c4:#ff9d6e;--c5:#f0d070;--acc:#e8c65b;--accfg:#15161a}}
-:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e8e8;--ed:rgba(200,200,200,.22);--hi:#ff6a5e;--pnl:rgba(30,31,36,.95);--zone:rgba(255,255,255,.06);--later:#6b7f86;--mut:rgba(232,232,232,.7);--c0:#1f6382;--c1:#3f8ba3;--c2:#8ec5ea;--c3:#ff6a5e;--c4:#ff9d6e;--c5:#f0d070;--acc:#e8c65b;--accfg:#15161a}
+:root{--bg:#fff;--fg:#14414d;--ed:rgba(20,65,77,.28);--hi:#eb5d55;--pnl:rgba(255,255,255,.96);--zone:#eff2f2;--later:#a4b3b9;--mk:#7b4fb8;--mut:rgba(20,65,77,.7);--line:rgba(128,128,128,.35);--c0:#14414d;--c1:#335f76;--c2:#4f9bc4;--c3:#eb5d55;--c4:#eb885a;--c5:#e8c65b;--acc:#335f76;--accfg:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e8e8;--ed:rgba(200,200,200,.22);--hi:#ff6a5e;--pnl:rgba(30,31,36,.95);--zone:#232427;--later:#6b7f86;--mk:#b69af0;--mk:#b69af0;--mut:rgba(232,232,232,.7);--c0:#1f6382;--c1:#3f8ba3;--c2:#8ec5ea;--c3:#ff6a5e;--c4:#ff9d6e;--c5:#f0d070;--acc:#e8c65b;--accfg:#15161a}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e8e8;--ed:rgba(200,200,200,.22);--hi:#ff6a5e;--pnl:rgba(30,31,36,.95);--zone:#232427;--later:#6b7f86;--mut:rgba(232,232,232,.7);--c0:#1f6382;--c1:#3f8ba3;--c2:#8ec5ea;--c3:#ff6a5e;--c4:#ff9d6e;--c5:#f0d070;--acc:#e8c65b;--accfg:#15161a}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
 svg#sv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
@@ -61,7 +61,7 @@ label.sz{display:block;margin-top:10px;font-size:12px;color:var(--mut)}label.sz 
 .det .lb,.det .fd{opacity:0!important;pointer-events:none}
 .det .sp{opacity:0;pointer-events:none}.det .sp.cur{opacity:1}
 @keyframes fi{from{opacity:0}to{opacity:1}}@keyframes fo{from{opacity:1}to{opacity:0}}
-.gd{animation:fi .45s .3s both}.gd.out{animation:fo .25s both}.dn{cursor:default}.lkl{cursor:pointer}
+.gd{animation:fi .45s .3s both}.gd.out{animation:fo .25s both}.dn{cursor:default}.dk{cursor:pointer}.lkl{cursor:pointer}
 #db{position:fixed;display:none;align-items:center;gap:6px;background:var(--pnl);padding:6px 8px;border-radius:10px;box-shadow:0 1px 10px rgba(0,0,0,.18);z-index:5;transform:translateX(-50%);font-size:13px;white-space:nowrap;max-width:calc(100vw - 20px)}
 #db .tt{overflow:hidden;text-overflow:ellipsis;min-width:0}#db .tt small{color:var(--mut);margin-left:6px}
 #db button{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:7px;font:inherit;font-size:13px;padding:3px 9px;cursor:pointer;flex:none}
@@ -85,7 +85,7 @@ html.one #p,html.one #r,html.one #zm,html.one #db,html.one #info{display:none!im
 
 <svg id="sv"><g id="vp"></g></svg>
 <div id="p">
-  <div class="hd"><b>Елфимово • Лукояновский уезд</b></div>
+  <div class="hd"><b id="hdt">Елфимово • Лукояновский уезд</b></div>
   <input id="q" type="search" placeholder="Найти фамилию…" aria-label="Поиск фамилии" autocomplete="off"><div id="res"></div>
   <div id="cnt" aria-live="polite"></div>
   <div id="info"></div>
@@ -224,6 +224,11 @@ function build() {
   vp.textContent = '';
   VIS = list(); setEpochs(VIS);
   gBase = el('g', { class: 'gb' }, vp);
+  // фоновые зоны (с 3.2): серым выделены периоды, закрытые документами — Елфимово: 1745–1850 и 1858–1869; Красная Поляна: от внутреннего круга до 1850 и 1858–1869; 1850–1858 (разрыв в метриках) и центр до 1745 — без заливки
+  {
+    const band = (a, b) => { if (!(b > a)) return; el('path', { d: `M${b} 0A${b} ${b} 0 1 1 ${-b} 0A${b} ${b} 0 1 1 ${b} 0ZM${a} 0A${a} ${a} 0 1 0 ${-a} 0A${a} ${a} 0 1 0 ${a} 0Z`, fill: 'var(--zone)', 'fill-rule': 'evenodd', class: 'zn' }, gBase); };
+    band(st.v === 'e' ? ry(1745) : R0, ry(1850)); band(ry(1858), ry(1869));
+  }
   VC.forEach(i => {
     if (st.v === 'e' && COLS[i].y === '1677') return;   // кольцо переписи 1677 г. — это сам центральный круг
     const r = ry(COLS[i].n), reg = isReg(i);
@@ -518,7 +523,7 @@ function detShow(r, animate) {
    da.style.left = (A.l + A.r) / 2 + 'px'; da.style.top = A.t + TB + 2 + 'px';
   const LKH = (r.lk && r.lk.length) ? '<span>' + (r.lk.length === 1 ? 'На сайте есть страница фамилии: ' : 'На сайте есть страницы следующих фамилий: ') + r.lk.map(x => `<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join(', ') + '</span>' : '';
   const LNH = LNK.length ? '<span>Смена фамилии (зятья, пасынки): ' + LNK.map(l => `<a href="#" data-go="${esc(l.n)}">${l.d === 'o' ? '→' : '←'} ${esc(l.n)}</a>`).join(', ') + '</span>' : '';
-  const BKH = (ONE && FROM) ? `<span><a href="#" data-go="${esc(FROM)}" data-back="1">← назад к лучу «${esc(FROM)}»</a></span>` : '';
+  const BKH = (ONE && FROM) ? (FROM === r.n ? `<span><a href="#" data-go="${esc(FROM)}" data-back="1" data-v="${st.v === 'k' ? 'e' : 'k'}">← назад к лучу ${st.v === 'k' ? 'в Елфимове' : 'в Красной Поляне'}</a></span>` : `<span><a href="#" data-go="${esc(FROM)}" data-back="1">← назад к лучу «${esc(FROM)}»</a></span>`) : '';
   const mkDa = list => BKH + `<b>Возраст фамилии ≈ ${pl(age, 'год', 'года', 'лет')}</b><span>Прослеживается по документам с ${y1} года</span><span>${NV % 10 === 1 && NV % 100 !== 11 ? 'Известен' : 'Известно'} ${pl(NV, 'вариант', 'варианта', 'вариантов')} написания фамилии${list ? ': ' + VAR.map(esc).join(', ') : ' (названия — справа от диаграммы)'}</span>${LKH}${LNH}`;
   const lay = () => { const AH = da.offsetHeight + 6, Hav = A.b - (A.t + TB + AH); return { AH, Hav, laneH: Math.max(LH, Math.min(24, (Hav - 2 * hwPx - 120 - RX) / Math.max(n, 1))) }; };
   da.innerHTML = mkDa(true); da.style.display = 'block';
@@ -550,7 +555,10 @@ function detShow(r, animate) {
   if (spEl) { DETEL = spEl; const fk = hwPx / hwRaw; [...spEl.children].forEach(e => { const tg = e.tagName; if (tg === 'polygon' || tg === 'circle' || tg === 'line' || (tg === 'path' && e.hasAttribute('data-y'))) e.style.display = 'none'; else if (tg === 'path' && fk < 1) e.setAttribute('transform', `rotate(${deg}) scale(1 ${fk}) rotate(${-deg})`); }); }
   if (regi != null) { const x = ry(COLS[regi].n), s = P(6.5);
     el('polygon', { points: `${x},${-s} ${x + s},0 ${x},${s} ${x - s},0`, fill: 'var(--bg)', stroke: 'var(--hi)', 'stroke-width': P(1.8) }, g);
-    el('circle', { cx: x, cy: 0, r: P(11), fill: 'transparent', class: 'dn', 'data-tip': `<b>Красная Поляна, ${esc(COLS[regi].y)} г.</b><br>переселение части крестьян: ${pl(r.p[regi], 'мужчина', 'мужчины', 'мужчин')}, ${pl(r.h[regi], 'двор', 'двора', 'дворов')}` }, g); }
+    el('circle', { cx: x, cy: 0, r: P(11), fill: 'transparent', class: VIEWS.k.some(q => has(r, q)) ? 'dn dk' : 'dn', 'data-sw': 'k', 'data-tip': `<b>Красная Поляна, ${esc(COLS[regi].y)} г.</b><br>переселение части крестьян: ${pl(r.p[regi], 'мужчина', 'мужчины', 'мужчин')}, ${pl(r.h[regi], 'двор', 'двора', 'дворов')}${VIEWS.k.some(q => has(r, q)) ? '<br><i>нажмите, чтобы открыть луч в Красной Поляне</i>' : ''}` }, g); }
+  if (st.v === 'k' && VIEWS.e.some(q => has(r, q))) { const x = xs + P(10), s = P(6.5);   // ромбик «Елфимово»: переход на тот же луч на вкладке «Елфимово»
+    el('polygon', { points: `${x},${-s} ${x + s},0 ${x},${s} ${x - s},0`, fill: 'var(--bg)', stroke: 'var(--hi)', 'stroke-width': P(1.8) }, g);
+    el('circle', { cx: x, cy: 0, r: P(11), fill: 'transparent', class: 'dn dk', 'data-sw': 'e', 'data-tip': `<b>Елфимово</b><br>предки жителей Красной Поляны — из села Елфимова<br><i>нажмите, чтобы открыть луч в Елфимове</i>` }, g); }
   const maxN = Math.max(1, ...[...LM.values()].flatMap(l => l.mk.map(x => x[1])));
   const bars = (l, y) => l.mk.forEach(([yy, nn]) => {
     const x0 = ry(yy - .5), x1 = ry(yy + .5), w = Math.max(P(1.8), (x1 - x0) * .8), h = Math.max(P(3), P(laneH - 4) * nn / maxN), xm = (x0 + x1) / 2, wh = Math.max(w, P(5));
@@ -606,11 +614,15 @@ function detShow(r, animate) {
   camTo(target, animate ? 700 : 0);
   if (ONE) { try { parent.postMessage({ elfimovoRayHeight: Math.ceil(A.t + TB + AH + (bottom - top) + 10), ray: r.n }, '*'); } catch (e) {} }   // родитель может подогнать высоту iframe
 }
-function goRay(n, back) {   // переход к другому лучу по связи; в режиме «один луч» — загрузка страницы с другим ?ray=, в обычном — раскрытие луча
-  if (ONE) { const q = new URLSearchParams(); q.set('ray', n); if (QS.get('theme')) q.set('theme', QS.get('theme')); if (!back && DET) q.set('from', DET); location.assign(location.pathname + '?' + q.toString()); }
+function goRay(n, back, v) {   // переход к другому лучу по связи; в режиме «один луч» — загрузка страницы с другим ?ray=, в обычном — раскрытие луча
+  if (ONE) { const q = new URLSearchParams(); q.set('ray', n); if (v === 'k') q.set('v', 'k'); if (QS.get('theme')) q.set('theme', QS.get('theme')); if (!back && DET) q.set('from', DET); location.assign(location.pathname + '?' + q.toString()); }
   else showRay(n);
 }
-$('da').addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[data-go]'); if (a) { e.preventDefault(); goRay(a.dataset.go, !!a.dataset.back); } });
+function goView(n, v) {   // ромбик на раскрытом луче: тот же луч на другой вкладке (e — Елфимово, k — Красная Поляна); в режиме «один луч» — страница с &v= и кнопкой «назад»
+  if (ONE) { const q = new URLSearchParams(); q.set('ray', n); if (v === 'k') q.set('v', 'k'); q.set('from', n); if (QS.get('theme')) q.set('theme', QS.get('theme')); location.assign(location.pathname + '?' + q.toString()); }
+  else { tip.style.display = 'none'; setView(v); showRay(n); }
+}
+$('da').addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[data-go]'); if (a) { e.preventDefault(); goRay(a.dataset.go, !!a.dataset.back, a.dataset.v); } });
 const detStep = d => { if (!DET) return; const i = VIS.findIndex(x => x.n === st.sel), j = (i + d + VIS.length) % VIS.length; st.sel = VIS[j].n; mark(); info(); detSync(); };
 $('dprev').onclick = () => detStep(-1); $('dnext').onclick = () => detStep(1);
 $('dx').onclick = () => { st.sel = null; mark(); info(); detSync(); };
@@ -633,13 +645,14 @@ sv.addEventListener('pointermove', e => {
   const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; moved += Math.abs(dx) + Math.abs(dy); tip.style.display = 'none';
   if (ptrs.size == 1) { TX += dx; TY += dy; apply(); } else if (ptrs.size == 2 && pinch) { const [a, b] = [...ptrs.values()]; zoomTo((a.x + b.x) / 2, (a.y + b.y) / 2, pinch.k * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d); }
 });
-const up = e => { if (ptrs.size == 1 && moved < 6) { const g = document.elementFromPoint(e.clientX, e.clientY), sp = g && g.closest && g.closest('.sp,.lb'), fe = g && g.closest && g.closest('.fd'), dn = g && g.closest && g.closest('.dn'), lk = g && g.closest && g.closest('.lkl'); if (lk) goRay(lk.dataset.go); else if (dn) tipAt(dn.dataset.tip, e.clientX, e.clientY, true); else if (fe) selectFd(+fe.dataset.fd); else if (sp) select(sp.dataset.n); else if (DET) tip.style.display = 'none';   // в режиме детализации промах мимо точки не закрывает луч: выход — «Назад», Esc, ⌂ или «Закрыть»
+const up = e => { if (ptrs.size == 1 && moved < 6) { const g = document.elementFromPoint(e.clientX, e.clientY), sp = g && g.closest && g.closest('.sp,.lb'), fe = g && g.closest && g.closest('.fd'), dn = g && g.closest && g.closest('.dn'), lk = g && g.closest && g.closest('.lkl'); if (lk) goRay(lk.dataset.go); else if (dn && dn.dataset.sw) goView(DET, dn.dataset.sw); else if (dn) tipAt(dn.dataset.tip, e.clientX, e.clientY, true); else if (fe) selectFd(+fe.dataset.fd); else if (sp) select(sp.dataset.n); else if (DET) tip.style.display = 'none';   // в режиме детализации промах мимо точки не закрывает луч: выход — «Назад», Esc, ⌂ или «Закрыть»
     else if (st.sel != null) select(st.sel); else if (st.fd != null) selectFd(st.fd); } ptrs.delete(e.pointerId); pinch = null; };
 sv.addEventListener('pointerup', up); sv.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); pinch = null; });
 sv.addEventListener('wheel', e => { e.preventDefault(); zoomTo(e.clientX, e.clientY, K * Math.exp(-e.deltaY * .0015)); }, { passive: false });
 $('zi').onclick = () => zoomTo(innerWidth / 2, innerHeight / 2, K * 1.4); $('zo').onclick = () => zoomTo(innerWidth / 2, innerHeight / 2, K / 1.4); $('z0').onclick = () => { if (DET) { SAVE = fitCam(); st.sel = null; mark(); info(); detSync(); } else fit(); };
 function setView(v) {
   st.v = v; st.sel = null; st.fd = null; st.f = 'all';
+  $('hdt').textContent = (v === 'k' ? 'Красная Поляна' : 'Елфимово') + ' • Лукояновский уезд';   // заголовок слева следует за вкладкой (с 3.2.3)
   document.querySelectorAll('.tabs button[data-v]').forEach(x => x.setAttribute('aria-pressed', x.dataset.v === v ? 'true' : 'false'));
   document.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x.dataset.f === 'all' ? 'true' : 'false'));
   $('chipkp').style.display = v === 'e' ? '' : 'none';
@@ -679,7 +692,7 @@ if (innerWidth < 900) $('fold').click();   // узкий экран: настр�
 if (ONE) {
   const nk = s => String(s).toLowerCase().replace(/ё/g, 'е').trim(), q = nk(ONE);
   const s = DATA.m.find(r => nk(r.n) === q) || DATA.m.find(r => (r.vr || []).some(v => nk(v) === q) || (r.f || []).some(x => nk(x[0]) === q));
-  if (s) showRay(s.n);
+  if (s) { if (QS.get('v') === 'k') setView('k'); showRay(s.n); }
   else { const d = document.createElement('div'); d.id = 'nf'; d.className = 'on'; d.textContent = 'Для фамилии «' + ONE + '» на диаграмме пока нет данных.'; document.body.appendChild(d); }
 }
 </script>
